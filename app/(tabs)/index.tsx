@@ -31,6 +31,7 @@ export default function HomeScreen() {
   };
 
   const [image, setImage] = useState(null);
+  const [imageSelected, setImageSelected] = useState(false);
   
     const requestPermissions = async () => {
       const cameraResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -57,8 +58,13 @@ export default function HomeScreen() {
   
       if (!result.canceled) {
         setImage(result.uri); // Set the captured image URI
+        setImageSelected(true); // Indicate that an image has been selected
       }
     }
+    };
+    const calculateScore = () => {
+      // Implement your score calculation logic here
+      Alert.alert('Score Calculation', 'Score calculation logic goes here.');
     };
 
   return (
@@ -113,6 +119,13 @@ export default function HomeScreen() {
         <TouchableOpacity style={styles.button} onPress={takePhoto}>
           <Text style={styles.buttonText}>Go</Text>
         </TouchableOpacity>
+
+        {/* Conditionally render the "Calculate Score" button */}
+        {imageSelected && (
+          <TouchableOpacity style={styles.button} onPress={calculateScore}>
+            <Text style={styles.buttonText}>Calculate Score</Text>
+          </TouchableOpacity>
+        )}
       </View>
     </ImageBackground>
   );
