@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, Alert, Switch, FlatList} from 'react-native';
 import { Picker } from '@react-native-picker/picker';
+import * as ImagePicker from 'expo-image-picker'
 
 const objectivesList = [
   'Color Diagonals',
@@ -29,14 +30,36 @@ export default function HomeScreen() {
     }));
   };
 
-  const handleGo = () => {
-    const selected = Object.keys(selectedObjectives).filter((key) => selectedObjectives[key]);
-    if (playerColor && selected.length === 3 && remainingTokens) {
-      Alert.alert('Input Received', `Player Color: ${playerColor}\nObjectives: ${selected.join(', ')}\nRemaining Tokens: ${remainingTokens}`);
-    } else {
-      Alert.alert('Incomplete Input', 'Please fill all fields and select exactly 3 objectives.');
+  const [image, setImage] = useState(null);
+  
+    const requestPermissions = async () => {
+      const cameraResult = await ImagePicker.requestCameraPermissionsAsync();
+      const mediaLibraryResult = await ImagePicker.requestMediaLibraryPermissionsAsync();
+      return cameraResult.status === 'granted' && mediaLibraryResult.status === 'granted';
+    };
+  
+    const takePhoto = async () => {
+      const hasPermission = await requestPermissions();
+      const selected = Object.keys(selectedObjectives).filter((key) => selectedObjectives[key]);
+      if (!playerColor || selected.length !== 3 || !remainingTokens) {
+        Alert.alert('Incomplete Input', 'Please fill all fields and select exactly 3 objectives.');
+      } 
+      else if (!hasPermission) {
+        alert('Permission to access camera and media library is required!');
+        return;
+      } 
+      else {
+      const result = await ImagePicker.launchCameraAsync({
+        allowsEditing: true,
+        aspect: [5, 4], // Optional: restrict the aspect ratio
+        quality: 1, // Optional: set the quality of the photo
+      });
+  
+      if (!result.canceled) {
+        setImage(result.uri); // Set the captured image URI
+      }
     }
-  };
+    };
 
   return (
     <ImageBackground
@@ -87,7 +110,7 @@ export default function HomeScreen() {
         </Picker>
 
         {/* "Go" Button */}
-        <TouchableOpacity style={styles.button} onPress={handleGo}>
+        <TouchableOpacity style={styles.button} onPress={takePhoto}>
           <Text style={styles.buttonText}>Go</Text>
         </TouchableOpacity>
       </View>
