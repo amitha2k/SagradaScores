@@ -10,6 +10,7 @@ const divideImage = async (uri: string): Promise<string[]> => {
       (error) => reject(error)
     );
   });
+  console.log(originalHeight, originalWidth)
   const rows = 4; // Number of rows
   const cols = 5; // Number of columns
   const croppedImages: string[] = [];

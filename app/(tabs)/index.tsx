@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, Alert, Switch, FlatList } from 'react-native';
+import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, Alert, Switch, FlatList, Image } from 'react-native';
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import divideImage from './images'
+
 const objectivesList = [
   'Color Diagonals',
   'Column Color Variety',
@@ -32,6 +33,8 @@ export default function HomeScreen() {
 
   const [image, setImage] = useState(null);
   const [imageSelected, setImageSelected] = useState(false);
+  const [imageArray, setImageArray] = useState([""]);
+  const [showScoreCalculation, setShowScoreCalculation] = useState(false);
 
   const requestPermissions = async () => {
     const cameraResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -57,17 +60,22 @@ export default function HomeScreen() {
       });
 
       if (!result.canceled) {
-        setImage(result.uri); // Set the captured image URI
+        // setImage(result.uri); // Set the captured image URI
         setImageSelected(true); // Indicate that an image has been selected
-        const imageArray = await divideImage(result.assets[0].uri);
-        console.log(imageArray);
-
+        const images = await divideImage(result.assets[0].uri);
+        setImageArray(images); // Update the state with the array of image URIs
+        // console.log('Image Array:', imageArray)
       }
     }
   };
+  // const calculateScore = () => {
+  //   // Implement your score calculation logic here
+  //   Alert.alert('Score Calculation', 'Score calculation logic goes here.');
+  // };
+
   const calculateScore = () => {
     // Implement your score calculation logic here
-    Alert.alert('Score Calculation', 'Score calculation logic goes here.');
+    setShowScoreCalculation(true);
   };
 
   return (
@@ -80,9 +88,8 @@ export default function HomeScreen() {
       < Text style = { styles.label } > Choose Player Color: </Text>
         < Picker
   selectedValue = { playerColor }
-  onValueChange = {(itemValue) => setPlayerColor(itemValue)
-}
-style = { styles.dropdown }
+  onValueChange = {(itemValue) => setPlayerColor(itemValue)} 
+  style = { styles.dropdown }
   >
   <Picker.Item label="Select Color" value = "" />
     <Picker.Item label="Red" value = "Red" />
@@ -116,7 +123,7 @@ style = { styles.dropdown }
   >
   <Picker.Item label="Select Tokens" value = "0" />
   {
-    [...Array(11).keys()].map((num) => (
+    [...Array(7).keys()].map((num) => (
       <Picker.Item key= { num } label = {`${num}`} value = {`${num}`} />
           ))}
 </Picker>
@@ -134,6 +141,19 @@ style = { styles.dropdown }
         </TouchableOpacity>
         )
 }
+{showScoreCalculation && (
+  <View style={styles.scoreContainer}>
+    <Text style={styles.scoreHeading}>Score Calculated</Text>
+    <FlatList
+      data={imageArray}
+      keyExtractor={(item, index) => index.toString()}
+      renderItem={({ item }) => (
+        <Image source={{ uri: item }} style={styles.image} />
+      )}
+      numColumns={5} // Display images in a grid with 4 columns
+    />
+  </View>
+)}
 </View>
   </ImageBackground>
   );
@@ -188,4 +208,19 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: 'bold',
   },
-});
+  image: {
+    width: 80, // Adjust the width as needed
+    height: 80, // Adjust the height as needed
+    margin: 5,
+  },
+  scoreContainer: {
+    marginTop: 20,
+    alignItems: 'center',
+  },
+  scoreHeading: {
+    fontSize: 24,
+    fontWeight: 'bold',
+    color: 'white',
+    marginBottom: 10,
+  },
+})
