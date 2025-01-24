@@ -3,6 +3,7 @@ import { StyleSheet, View, Text, ImageBackground, TouchableOpacity, Alert, Switc
 import { Picker } from '@react-native-picker/picker';
 import * as ImagePicker from 'expo-image-picker';
 import divideImage from './images'
+import axios from 'axios';
 
 const objectivesList = [
   'Color Diagonals',
@@ -33,8 +34,10 @@ export default function HomeScreen() {
 
   const [image, setImage] = useState(null);
   const [imageSelected, setImageSelected] = useState(false);
-  const [imageArray, setImageArray] = useState([""]);
+  // const [imageArray, setImageArray] = useState<string[]>([]);
+  var imageArray: string[];
   const [showScoreCalculation, setShowScoreCalculation] = useState(false);
+  const [dotsCount, setDotsCount] = useState<number | null>(null);
 
   const requestPermissions = async () => {
     const cameraResult = await ImagePicker.requestCameraPermissionsAsync();
@@ -63,19 +66,38 @@ export default function HomeScreen() {
         // setImage(result.uri); // Set the captured image URI
         setImageSelected(true); // Indicate that an image has been selected
         const images = await divideImage(result.assets[0].uri);
-        setImageArray(images); // Update the state with the array of image URIs
-        // console.log('Image Array:', imageArray)
+        imageArray = images; // Update the state with the array of image URIs
+        console.log('Image Array:', imageArray)
+        console.log(images)
+        processImage();
       }
     }
   };
-  // const calculateScore = () => {
-  //   // Implement your score calculation logic here
-  //   Alert.alert('Score Calculation', 'Score calculation logic goes here.');
-  // };
 
   const calculateScore = () => {
     // Implement your score calculation logic here
     setShowScoreCalculation(true);
+  };
+
+  const processImage = async () => {
+    if (!imageArray[1]) return;
+
+    const formData = new FormData();
+    formData.append('image', {
+      uri: imageArray[1],
+      type: 'image/jpeg',
+      name: 'dice.jpg',
+    });
+
+    try {
+      const response = await axios.post('http://127.0.0.1:5000/process-image', formData, {
+        headers: { 'Content-Type': 'multipart/form-data' },
+      });
+      setDotsCount(response.data.num_dots);
+      console.log(dotsCount)
+    } catch (error) {
+      console.error('Error processing image:', error);
+    }
   };
 
   return (
