@@ -89,6 +89,11 @@ export default function HomeScreen() {
       name: 'dice.jpg',
     });
 
+    // fetch('http://127.0.0.1:5000/process-image')
+    // .then((response) => response.json())
+    // .then((data) => console.log(data))
+    // .catch((error) => console.error('Fetch Error:', error));
+
     try {
       const response = await axios.post('http://127.0.0.1:5000/process-image', formData, {
         headers: { 'Content-Type': 'multipart/form-data' },
